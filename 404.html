@@ -5,10 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page Not Found | Sequential Analytics</title>
 
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YD1TBDQYVZ"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-YD1TBDQYVZ');</script>
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Bricolage Grotesque', 'sans-serif'],
+            body: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            'sa-bg': '#0A0A0A',
+            'sa-surface': '#111111',
+            'sa-accent': '#D2FF46',
+            'sa-text': '#F5F5F5',
+            'sa-muted': '#888888',
+          },
+        }
+      }
+    }
+  </script>
 
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_32x32.png">
@@ -27,23 +53,75 @@
       <div class="nav-links">
         <a href="/company/" class="nav-link">Company</a>
         <a href="/case-studies/" class="nav-link">Case Studies</a>
-        <a href="/es/404.html" class="nav-link" onclick="localStorage.setItem('sa-lang-manual','es')">ES</a>
+        <a href="/es/" class="nav-link" onclick="localStorage.setItem('sa-lang-manual','es')">ES</a>
         <a href="/contact/" class="btn-primary btn-primary-sm">Get in touch</a>
+      </div>
+      <button class="nav-toggle" id="menu-toggle" aria-label="Toggle menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="mobile-menu-inner">
+        <a href="/company/" class="nav-link">Company</a>
+        <a href="/case-studies/" class="nav-link">Case Studies</a>
+        <a href="/es/" class="nav-link" onclick="localStorage.setItem('sa-lang-manual','es')">ES</a>
+        <a href="/contact/" class="btn-primary btn-primary-sm" style="text-align:center;justify-content:center;">Get in touch</a>
       </div>
     </div>
   </nav>
 
-  <section style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 96px 24px 48px;">
-    <div style="text-align: center; max-width: 480px;">
-      <p style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 72px; font-weight: 800; color: #D2FF46; line-height: 1; margin-bottom: 16px;">404</p>
-      <h1 style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 12px; color: #F5F5F5;">Page not found.</h1>
-      <p style="color: #888888; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">The page you're looking for doesn't exist or has been moved.</p>
+  <section class="min-h-screen flex items-center justify-center pt-24 pb-12 px-6">
+    <div class="text-center max-w-md">
+      <p class="font-display text-7xl font-extrabold text-sa-accent leading-none mb-4">404</p>
+      <h1 class="font-display text-2xl font-bold mb-3 text-sa-text">Page not found.</h1>
+      <p class="text-sa-muted text-[15px] leading-relaxed mb-8">The page you're looking for doesn't exist or has been moved.</p>
       <a href="/" class="btn-primary">
         Back to home
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
   </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="flex flex-col md:flex-row justify-between gap-10">
+        <div>
+          <a href="/">
+            <img src="/assets/logo_full_transparent.png" alt="Sequential Analytics" style="height: 26px; width: auto; margin-bottom: 16px;">
+          </a>
+          <p class="text-sa-muted text-sm">Data consulting & custom software.</p>
+          <p class="text-sa-muted text-sm">Founded 2025, California.</p>
+        </div>
+        <div class="flex gap-16">
+          <div>
+            <p class="font-display font-semibold text-sm mb-4 text-sa-text">Navigate</p>
+            <div class="flex flex-col gap-3">
+              <a href="/company/" class="nav-link text-sm">Company</a>
+              <a href="/case-studies/" class="nav-link text-sm">Case Studies</a>
+              <a href="/contact/" class="nav-link text-sm">Contact</a>
+            </div>
+          </div>
+          <div>
+            <p class="font-display font-semibold text-sm mb-4 text-sa-text">Connect</p>
+            <div class="flex flex-col gap-3">
+              <a href="mailto:info@sequentialanalytics.io" class="nav-link text-sm">info@sequentialanalytics.io</a>
+              <a href="https://calendar.app.google/gNpZSJ6ZeQSfCGjLA" target="_blank" rel="noopener" class="nav-link text-sm">Book a Call</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom flex flex-col sm:flex-row justify-between items-center gap-3">
+        <p class="text-[#555555] text-xs">&copy; 2026 Sequential Analytics LLC. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    });
+  </script>
 
 </body>
 </html>
