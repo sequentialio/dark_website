@@ -454,8 +454,8 @@ All main pages end with a CTA section featuring:
 | Service | Usage | Identifier/URL |
 |---|---|---|
 | Google Analytics | Page tracking | `G-YD1TBDQYVZ` |
-| Formspree | Contact form + newsletter | `https://formspree.io/f/mykglyvk` |
-| Google Calendar | Booking link | `https://calendar.app.google/upRLNNQrXXeRLZpm9` |
+| Formspree | Contact form + newsletter | `https://formspree.io/f/mkowpdvb` |
+| Google Calendar | Booking link | `https://calendar.app.google/gNpZSJ6ZeQSfCGjLA` |
 | Google Fonts | Typography | Bricolage Grotesque + Outfit |
 | Tailwind CSS (CDN) | Utility-first CSS | `https://cdn.tailwindcss.com` |
 | LinkedIn | Company page (services footer only) | `https://www.linkedin.com/company/sequential-analytics` |
