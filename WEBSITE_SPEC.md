@@ -454,7 +454,7 @@ All main pages end with a CTA section featuring:
 | Service | Usage | Identifier/URL |
 |---|---|---|
 | Google Analytics | Page tracking | `G-YD1TBDQYVZ` |
-| Formspree | Contact form + newsletter | `https://formspree.io/f/mykglyvk` |
+| Formspree | Contact form + newsletter | `https://formspree.io/f/xaqdzylv` |
 | Google Calendar | Booking link | `https://calendar.app.google/gNpZSJ6ZeQSfCGjLA` |
 | Google Fonts | Typography | Bricolage Grotesque + Outfit |
 | Tailwind CSS (CDN) | Utility-first CSS | `https://cdn.tailwindcss.com` |
