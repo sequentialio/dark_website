@@ -1,118 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YD1TBDQYVZ"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found | Sequential Analytics</title>
 
-        gtag('config', 'G-YD1TBDQYVZ');
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/Sequential Analytics_files/favicon.png" rel="shortcut icon" type="image/png">
-    <link href="/Sequential Analytics_files/favicon.png" rel="apple-touch-icon">
-    <title>Page Not Found | Sequential Analytics</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            text-align: center;
-            background: white;
-            padding: 60px 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-
-        .error-code {
-            font-size: 120px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 32px;
-            color: #333;
-            margin-bottom: 16px;
-        }
-
-        p {
-            font-size: 18px;
-            color: #666;
-            margin-bottom: 32px;
-            line-height: 1.6;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-    </style>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon_32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple_touch_icon_180x180.png">
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
-    <div class="container">
-        <div class="error-code">404</div>
-        <h1>Page Not Found</h1>
-        <p>Oops! The page you're looking for doesn't exist. It might have been moved or deleted.</p>
-        <div class="button-group">
-            <a href="/" class="btn btn-primary">Go Home</a>
-            <a href="/contact/" class="btn btn-secondary">Contact Us</a>
-        </div>
-    </div>
-</body>
 
+  <!-- Nav -->
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="/">
+        <img src="/assets/logo_navbar_1x.png" srcset="/assets/logo_navbar_2x.png 2x" alt="Sequential Analytics" style="height: 30px; width: auto;">
+      </a>
+      <div class="nav-links">
+        <a href="/company/" class="nav-link">Company</a>
+        <a href="/case-studies/" class="nav-link">Case Studies</a>
+        <a href="/contact/" class="btn-primary btn-primary-sm">Get in touch</a>
+      </div>
+    </div>
+  </nav>
+
+  <section style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 96px 24px 48px;">
+    <div style="text-align: center; max-width: 480px;">
+      <p style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 72px; font-weight: 800; color: #D2FF46; line-height: 1; margin-bottom: 16px;">404</p>
+      <h1 style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 12px; color: #F5F5F5;">Page not found.</h1>
+      <p style="color: #888888; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">The page you're looking for doesn't exist or has been moved.</p>
+      <a href="/" class="btn-primary">
+        Back to home
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </section>
+
+</body>
 </html>
