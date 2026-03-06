@@ -264,6 +264,11 @@ textarea.form-input { resize: vertical; min-height: 140px; }
   border: 1px solid rgba(255,255,255,0.08);
   color: #888888;
 }
+.badge-demo {
+  background: rgba(236,72,153,0.08);
+  border: 1px solid rgba(236,72,153,0.18);
+  color: #ec4899;
+}
 
 /* ── Link Accent ── */
 .link-accent {
@@ -317,6 +322,24 @@ textarea.form-input { resize: vertical; min-height: 140px; }
   animation: heroIn 0.7s ease forwards;
 }
 @keyframes heroIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Demo Section Entrance ── */
+.demo-fade {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: demoIn 0.8s ease forwards;
+}
+.demo-slide {
+  opacity: 0;
+  transform: translateY(40px);
+  animation: demoSlide 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes demoIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes demoSlide {
   to { opacity: 1; transform: translateY(0); }
 }
 

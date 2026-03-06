@@ -1,0 +1,994 @@
+import { useState, useMemo, useCallback } from "react";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTS & SAMPLE DATA
+// ═══════════════════════════════════════════════════════════════════════════
+
+const ROLES = {
+  owner: { label: "Owner", color: "#ec4899", icon: "★" },
+  kitchen: { label: "Kitchen Manager", color: "#22d3ee", icon: "◆" },
+  front: { label: "Front of House", color: "#a78bfa", icon: "●" },
+};
+
+const ORDER_STATUS = {
+  pending: { label: "Pending", bg: "#581c87", fg: "#d8b4fe" },
+  in_production: { label: "In Production", bg: "#064e3b", fg: "#6ee7b7" },
+  ready: { label: "Ready", bg: "#1e3a5f", fg: "#7dd3fc" },
+  completed: { label: "Completed", bg: "#1a1a2e", fg: "#a5b4fc" },
+  cancelled: { label: "Cancelled", bg: "#3b1010", fg: "#fca5a5" },
+};
+
+const RECIPES = [
+  { id: 1, name: "Sourdough Loaf", category: "Bread", baseYield: 12, unitCost: 1.84, sellPrice: 7.50, weeklyVolume: 84 },
+  { id: 2, name: "Chocolate Croissant", category: "Pastry", baseYield: 24, unitCost: 0.92, sellPrice: 4.25, weeklyVolume: 168 },
+  { id: 3, name: "Blueberry Muffin", category: "Pastry", baseYield: 36, unitCost: 0.68, sellPrice: 3.50, weeklyVolume: 216 },
+  { id: 4, name: "Cinnamon Roll", category: "Pastry", baseYield: 20, unitCost: 0.78, sellPrice: 4.75, weeklyVolume: 140 },
+  { id: 5, name: "Baguette", category: "Bread", baseYield: 16, unitCost: 0.95, sellPrice: 5.00, weeklyVolume: 112 },
+  { id: 6, name: "Almond Cake", category: "Cake", baseYield: 8, unitCost: 3.20, sellPrice: 8.50, weeklyVolume: 32 },
+  { id: 7, name: "Focaccia", category: "Bread", baseYield: 10, unitCost: 1.42, sellPrice: 6.00, weeklyVolume: 60 },
+  { id: 8, name: "Lemon Tart", category: "Pastry", baseYield: 12, unitCost: 1.55, sellPrice: 5.50, weeklyVolume: 48 },
+];
+
+const ORDERS = [
+  { id: 1, number: "ORD-0412", customer: "Riverdale Cafe", items: "48× Sourdough, 24× Baguette", total: 480.00, status: "completed", date: "Mar 5", rep: "Sofia" },
+  { id: 2, number: "ORD-0413", customer: "The Morning Table", items: "120× Choc Croissant, 72× Muffin", total: 762.00, status: "in_production", date: "Mar 6", rep: "Marcus" },
+  { id: 3, number: "ORD-0414", customer: "Greenwood Hotel", items: "200× Cinnamon Roll", total: 950.00, status: "pending", date: "Mar 6", rep: "Sofia" },
+  { id: 4, number: "ORD-0415", customer: "City Hall Event", items: "6× Almond Cake, 36× Lemon Tart", total: 249.00, status: "pending", date: "Mar 7", rep: "Marcus" },
+  { id: 5, number: "ORD-0416", customer: "Bloom & Bean", items: "36× Sourdough, 60× Croissant", total: 525.00, status: "ready", date: "Mar 6", rep: "Sofia" },
+  { id: 6, number: "ORD-0417", customer: "Parkside Deli", items: "24× Focaccia, 48× Baguette", total: 384.00, status: "completed", date: "Mar 4", rep: "Marcus" },
+  { id: 7, number: "ORD-0418", customer: "Summit Catering", items: "Custom wedding order", total: 2200.00, status: "pending", date: "Mar 8", rep: "Sofia", needsApproval: true },
+  { id: 8, number: "ORD-0419", customer: "Olive & Rye", items: "60× Baguette, 36× Focaccia", total: 516.00, status: "in_production", date: "Mar 6", rep: "Marcus" },
+];
+
+const WEEKLY_DATA = [
+  { day: "Mon", revenue: 1840, units: 312, waste: 2.1 },
+  { day: "Tue", revenue: 2150, units: 368, waste: 1.8 },
+  { day: "Wed", revenue: 1960, units: 341, waste: 3.2 },
+  { day: "Thu", revenue: 2340, units: 398, waste: 1.4 },
+  { day: "Fri", revenue: 2890, units: 486, waste: 1.1 },
+  { day: "Sat", revenue: 3420, units: 542, waste: 0.8 },
+  { day: "Sun", revenue: 2180, units: 372, waste: 2.4 },
+];
+
+const INGREDIENTS = [
+  { name: "Bread Flour (25 lb)", unit: "lb", cost: 0.52, stock: 187, reorder: 50 },
+  { name: "Butter (unsalted)", unit: "lb", cost: 4.20, stock: 42, reorder: 20 },
+  { name: "Sugar (granulated)", unit: "lb", cost: 0.68, stock: 95, reorder: 30 },
+  { name: "Eggs (large)", unit: "ea", cost: 0.38, stock: 240, reorder: 120 },
+  { name: "Heavy Cream", unit: "qt", cost: 3.80, stock: 18, reorder: 12 },
+  { name: "Chocolate (72%)", unit: "lb", cost: 8.40, stock: 14, reorder: 10 },
+  { name: "Almonds (sliced)", unit: "lb", cost: 9.60, stock: 8, reorder: 5 },
+  { name: "Blueberries (fresh)", unit: "pt", cost: 4.50, stock: 22, reorder: 15 },
+  { name: "Yeast (instant)", unit: "oz", cost: 0.85, stock: 32, reorder: 16 },
+  { name: "Vanilla Extract", unit: "oz", cost: 2.10, stock: 12, reorder: 8 },
+];
+
+const SOURDOUGH_INGREDIENTS = [
+  { name: "Bread Flour", amount: 5.0, unit: "lb", unitCost: 0.52 },
+  { name: "Water", amount: 3.2, unit: "lb", unitCost: 0.00 },
+  { name: "Starter (fed)", amount: 1.0, unit: "lb", unitCost: 0.15 },
+  { name: "Salt", amount: 0.1, unit: "lb", unitCost: 0.38 },
+  { name: "Olive Oil", amount: 0.15, unit: "lb", unitCost: 5.20 },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COLORS / THEME
+// ═══════════════════════════════════════════════════════════════════════════
+
+const T = {
+  bg: "#0c0a10",
+  surface: "#13111a",
+  surfaceHover: "#1a1724",
+  border: "#221e2e",
+  borderLight: "#2e2940",
+  text: "#f0eef5",
+  textMuted: "#8a8499",
+  textDim: "#5c5670",
+  pink: "#ec4899",
+  pinkGlow: "#ec489944",
+  pinkDim: "#ec489922",
+  pinkBg: "#ec489912",
+  green: "#22c55e",
+  red: "#ef4444",
+  cyan: "#22d3ee",
+  purple: "#a78bfa",
+  sidebar: "#0f0d14",
+  sidebarBorder: "#1e1a28",
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+const fmt = (n) => `$${Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtShort = (n) => {
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)}K`;
+  return `$${n.toFixed(0)}`;
+};
+const pct = (n) => `${Number(n).toFixed(1)}%`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOGO COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function Logo({ size = 34 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <defs>
+        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ec4899" />
+          <stop offset="50%" stopColor="#f472b6" />
+          <stop offset="100%" stopColor="#db2777" />
+        </linearGradient>
+        <filter id="logoGlow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      <rect width="48" height="48" rx="12" fill="url(#logoGrad)" />
+      {/* Wheat/bread stylized icon */}
+      <g filter="url(#logoGlow)">
+        {/* Center stem */}
+        <line x1="24" y1="38" x2="24" y2="14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+        {/* Left leaves */}
+        <ellipse cx="19" cy="18" rx="4.5" ry="2.2" transform="rotate(-35 19 18)" fill="#fff" opacity="0.95" />
+        <ellipse cx="18" cy="24" rx="4.5" ry="2.2" transform="rotate(-35 18 24)" fill="#fff" opacity="0.85" />
+        <ellipse cx="19" cy="30" rx="4.5" ry="2.2" transform="rotate(-35 19 30)" fill="#fff" opacity="0.75" />
+        {/* Right leaves */}
+        <ellipse cx="29" cy="18" rx="4.5" ry="2.2" transform="rotate(35 29 18)" fill="#fff" opacity="0.95" />
+        <ellipse cx="30" cy="24" rx="4.5" ry="2.2" transform="rotate(35 30 24)" fill="#fff" opacity="0.85" />
+        <ellipse cx="29" cy="30" rx="4.5" ry="2.2" transform="rotate(35 29 30)" fill="#fff" opacity="0.75" />
+        {/* Top grain */}
+        <ellipse cx="24" cy="12" rx="2.5" ry="3.5" fill="#fff" opacity="0.95" />
+      </g>
+    </svg>
+  );
+}
+
+function LogoMark({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#ec4899" opacity="0.15" />
+      <circle cx="24" cy="24" r="14" fill="#ec4899" opacity="0.25" />
+      <circle cx="24" cy="24" r="6" fill="#ec4899" />
+    </svg>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MICRO COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function StatusBadge({ status }) {
+  const s = ORDER_STATUS[status] || ORDER_STATUS.pending;
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      padding: "3px 10px", borderRadius: 20,
+      background: s.bg, color: s.fg,
+      fontSize: 11, fontWeight: 600, letterSpacing: 0.2,
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: "50%", background: s.fg, opacity: 0.8 }} />
+      {s.label}
+    </span>
+  );
+}
+
+function Metric({ label, value, sub, accent, icon }) {
+  const c = accent || T.pink;
+  return (
+    <div style={{
+      background: T.surface, border: `1px solid ${T.border}`,
+      borderRadius: 14, padding: "18px 20px",
+      display: "flex", flexDirection: "column", gap: 4,
+      position: "relative", overflow: "hidden",
+    }}>
+      <div style={{
+        position: "absolute", top: -8, right: -8,
+        width: 60, height: 60, borderRadius: "50%",
+        background: `${c}08`,
+      }} />
+      <span style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1.2 }}>{label}</span>
+      <span style={{ fontSize: 26, fontWeight: 800, color: c, letterSpacing: -1, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+      {sub && <span style={{ fontSize: 11, color: T.textMuted }}>{sub}</span>}
+    </div>
+  );
+}
+
+function BarChart({ data, valueKey, labelKey, color, height = 72 }) {
+  const max = Math.max(...data.map(d => d[valueKey]));
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height }}>
+      {data.map((d, i) => {
+        const h = max > 0 ? Math.max(3, (d[valueKey] / max) * (height - 18)) : 3;
+        return (
+          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
+            <div style={{
+              width: "100%", maxWidth: 36, height: h,
+              background: `linear-gradient(180deg, ${color || T.pink} 0%, ${color || T.pink}88 100%)`,
+              borderRadius: "5px 5px 2px 2px",
+              boxShadow: `0 0 12px ${color || T.pink}33`,
+              transition: "height 0.5s cubic-bezier(0.16,1,0.3,1)",
+            }} />
+            <span style={{ fontSize: 9, color: T.textDim, fontWeight: 500 }}>{d[labelKey]}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DonutChart({ segments, size = 100, thickness = 12 }) {
+  const total = segments.reduce((a, s) => a + s.value, 0);
+  const r = (size - thickness - 4) / 2;
+  const cx = size / 2, cy = size / 2;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  return (
+    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+      {segments.map((seg, i) => {
+        const p = total > 0 ? seg.value / total : 0;
+        const dash = circ * p;
+        const o = circ * offset;
+        offset += p;
+        return (
+          <circle key={i} cx={cx} cy={cy} r={r}
+            fill="none" stroke={seg.color} strokeWidth={thickness}
+            strokeDasharray={`${dash} ${circ - dash}`}
+            strokeDashoffset={-o}
+            strokeLinecap="round"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+const NAV = [
+  { id: "dashboard", label: "Dashboard", icon: "◫" },
+  { id: "orders", label: "Orders", icon: "☰" },
+  { id: "recipes", label: "Recipes", icon: "✦" },
+  { id: "inventory", label: "Inventory", icon: "▦" },
+  { id: "settings", label: "Settings", icon: "⚙" },
+];
+
+function Sidebar({ active, onNav, role, onRoleChange }) {
+  return (
+    <div style={{
+      width: 228, background: T.sidebar,
+      display: "flex", flexDirection: "column", height: "100%",
+      fontFamily: "'Syne', sans-serif",
+      borderRight: `1px solid ${T.sidebarBorder}`,
+    }}>
+      {/* Logo */}
+      <div style={{ padding: "22px 18px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+        <Logo size={36} />
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: T.text, letterSpacing: -0.5 }}>Rise & Proof</div>
+          <div style={{ fontSize: 9, color: T.pink, letterSpacing: 2, textTransform: "uppercase", fontWeight: 600 }}>Bakery Ops</div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <div style={{ padding: "8px 10px", flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+        {NAV.map(item => {
+          const isActive = active === item.id;
+          return (
+            <button key={item.id} onClick={() => onNav(item.id)} style={{
+              display: "flex", alignItems: "center", gap: 11,
+              padding: "10px 14px", borderRadius: 10, border: "none", cursor: "pointer",
+              background: isActive ? T.pinkDim : "transparent",
+              color: isActive ? T.pink : T.textMuted,
+              fontSize: 13, fontWeight: isActive ? 700 : 400,
+              fontFamily: "'Outfit', sans-serif", textAlign: "left",
+              transition: "all 0.15s ease",
+              borderLeft: isActive ? `2px solid ${T.pink}` : "2px solid transparent",
+            }}>
+              <span style={{ fontSize: 15, width: 20, textAlign: "center", opacity: isActive ? 1 : 0.6 }}>{item.icon}</span>
+              {item.label}
+              {item.id === "orders" && (
+                <span style={{
+                  marginLeft: "auto", background: T.pink, color: "#fff",
+                  fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 10,
+                  boxShadow: `0 0 8px ${T.pinkGlow}`,
+                }}>3</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Role Switcher */}
+      <div style={{ padding: "14px 14px", borderTop: `1px solid ${T.sidebarBorder}` }}>
+        <div style={{ fontSize: 9, color: T.textDim, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8, paddingLeft: 4, fontWeight: 600 }}>View as</div>
+        {Object.entries(ROLES).map(([key, r]) => (
+          <button key={key} onClick={() => onRoleChange(key)} style={{
+            display: "flex", alignItems: "center", gap: 8,
+            width: "100%", padding: "7px 10px", marginBottom: 2,
+            borderRadius: 8, border: role === key ? `1px solid ${r.color}44` : "1px solid transparent",
+            background: role === key ? `${r.color}15` : "transparent",
+            color: role === key ? r.color : T.textDim,
+            fontSize: 12, fontWeight: role === key ? 600 : 400,
+            cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left",
+          }}>
+            <span style={{ fontSize: 10 }}>{r.icon}</span>
+            {r.label}
+          </button>
+        ))}
+      </div>
+
+      {/* User */}
+      <div style={{ padding: "14px 16px", borderTop: `1px solid ${T.sidebarBorder}`, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{
+          width: 30, height: 30, borderRadius: "50%",
+          background: `linear-gradient(135deg, ${ROLES[role]?.color}, ${ROLES[role]?.color}88)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 12, fontWeight: 700, color: "#fff",
+          boxShadow: `0 0 10px ${ROLES[role]?.color}44`,
+        }}>DU</div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: T.text }}>Demo User</div>
+          <div style={{ fontSize: 10, color: T.textMuted }}>{ROLES[role]?.label}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════
+
+function DashboardPage({ role }) {
+  const isOwner = role === "owner";
+  const isKitchen = role === "kitchen";
+  const isFront = role === "front";
+
+  const weekRevenue = WEEKLY_DATA.reduce((a, d) => a + d.revenue, 0);
+  const weekUnits = WEEKLY_DATA.reduce((a, d) => a + d.units, 0);
+  const avgWaste = WEEKLY_DATA.reduce((a, d) => a + d.waste, 0) / WEEKLY_DATA.length;
+  const pendingOrders = ORDERS.filter(o => o.status === "pending").length;
+  const avgFoodCost = 28.4;
+
+  const catBreakdown = [
+    { label: "Bread", value: 38, color: T.pink },
+    { label: "Pastry", value: 45, color: T.cyan },
+    { label: "Cake", value: 12, color: T.purple },
+    { label: "Custom", value: 5, color: T.green },
+  ];
+
+  const displayOrders = isFront ? ORDERS.filter(o => o.rep === "Sofia") : ORDERS;
+
+  return (
+    <div style={{ padding: "28px 36px", maxWidth: 1180 }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0, letterSpacing: -0.5 }}>
+          {isOwner ? "Business Overview" : isKitchen ? "Production Dashboard" : "My Orders"}
+        </h1>
+        <p style={{ fontSize: 13, color: T.textMuted, margin: "4px 0 0" }}>
+          {isOwner ? "This week across all channels" : isKitchen ? "Today's production schedule and capacity" : "Orders assigned to you"}
+        </p>
+      </div>
+
+      {/* KPI Row */}
+      <div style={{ display: "grid", gridTemplateColumns: isOwner ? "repeat(4, 1fr)" : "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+        <Metric label="Weekly Revenue" value={fmtShort(weekRevenue)} sub="↑ 12% vs last week" accent={T.green} icon="$" />
+        {isOwner && <Metric label="Food Cost" value={pct(avgFoodCost)} sub="Target: under 30%" accent={avgFoodCost < 30 ? T.green : T.red} icon="%" />}
+        <Metric label="Units Produced" value={weekUnits.toLocaleString()} sub="This week" accent={T.pink} icon="▤" />
+        <Metric label={isKitchen ? "Avg. Waste" : "Pending Orders"} value={isKitchen ? pct(avgWaste) : pendingOrders} sub={isKitchen ? "Target: under 2%" : "Awaiting confirmation"} accent={isKitchen ? (avgWaste < 2 ? T.green : T.red) : T.purple} icon={isKitchen ? "↓" : "!"} />
+      </div>
+
+      {/* Charts Row */}
+      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 14, marginBottom: 20 }}>
+        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 22px" }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>
+            Daily Revenue (This Week)
+          </div>
+          <BarChart data={WEEKLY_DATA} valueKey="revenue" labelKey="day" color={T.pink} height={80} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14, paddingTop: 10, borderTop: `1px solid ${T.border}` }}>
+            <div>
+              <div style={{ fontSize: 10, color: T.textDim }}>Best Day</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Saturday ({fmtShort(3420)})</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 10, color: T.textDim }}>Daily Average</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>{fmtShort(weekRevenue / 7)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 22px" }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>
+            {isKitchen ? "Production by Category" : "Sales by Category"}
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+            <DonutChart segments={catBreakdown} size={100} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {catBreakdown.map((c, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 3, background: c.color, boxShadow: `0 0 6px ${c.color}44` }} />
+                  <span style={{ color: T.textMuted }}>{c.label}</span>
+                </div>
+                <span style={{ color: T.text, fontWeight: 600 }}>{c.value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Orders */}
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 22px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1 }}>Recent Orders</span>
+          <span style={{ fontSize: 11, color: T.pink, cursor: "pointer", fontWeight: 600 }}>View all →</span>
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}` }}>
+              {["Order", "Customer", "Items", !isFront && "Assigned", "Status", "Total"].filter(Boolean).map(h => (
+                <th key={h} style={{ textAlign: "left", padding: "8px 10px", color: T.textDim, fontWeight: 500, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {displayOrders.slice(0, 6).map(order => (
+              <tr key={order.id} style={{ borderBottom: `1px solid ${T.border}`, cursor: "pointer" }}
+                onMouseEnter={e => e.currentTarget.style.background = T.surfaceHover}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <td style={{ padding: "10px", color: T.pink, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>{order.number}</td>
+                <td style={{ padding: "10px", color: T.text, fontWeight: 500 }}>{order.customer}</td>
+                <td style={{ padding: "10px", color: T.textMuted, fontSize: 12, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{order.items}</td>
+                {!isFront && <td style={{ padding: "10px", color: T.textMuted }}>{order.rep}</td>}
+                <td style={{ padding: "10px" }}><StatusBadge status={order.status} /></td>
+                <td style={{ padding: "10px", color: T.text, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{fmt(order.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Approval Alert */}
+      {(isOwner || isKitchen) && (
+        <div style={{
+          marginTop: 14, background: `${T.pink}0a`, border: `1px solid ${T.pink}33`,
+          borderRadius: 14, padding: "14px 22px",
+          display: "flex", alignItems: "center", gap: 14,
+        }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 10,
+            background: T.pinkDim, color: T.pink,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 16, fontWeight: 700,
+            boxShadow: `0 0 12px ${T.pinkGlow}`,
+          }}>!</div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.pink }}>1 custom order needs approval</div>
+            <div style={{ fontSize: 12, color: T.textMuted }}>Orders over $1,000 or custom requests require manager sign-off before production starts.</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ORDERS PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+
+function OrdersPage({ role }) {
+  const [filter, setFilter] = useState("all");
+  const isFront = role === "front";
+  const filtered = ORDERS.filter(o => {
+    if (isFront && o.rep !== "Sofia") return false;
+    if (filter === "all") return true;
+    return o.status === filter;
+  });
+
+  return (
+    <div style={{ padding: "28px 36px", maxWidth: 1180 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0 }}>Orders</h1>
+          <p style={{ fontSize: 13, color: T.textMuted, margin: "4px 0 0" }}>Manage wholesale and custom orders</p>
+        </div>
+        <button style={{
+          background: `linear-gradient(135deg, ${T.pink}, #db2777)`,
+          color: "#fff", border: "none",
+          borderRadius: 10, padding: "10px 20px", fontSize: 13, fontWeight: 700,
+          cursor: "pointer", fontFamily: "'Outfit', sans-serif",
+          boxShadow: `0 4px 16px ${T.pinkGlow}`,
+        }}>+ New Order</button>
+      </div>
+
+      <div style={{ display: "flex", gap: 3, marginBottom: 18, background: T.surface, borderRadius: 10, padding: 3, width: "fit-content", border: `1px solid ${T.border}` }}>
+        {[["all", "All"], ["pending", "Pending"], ["in_production", "In Production"], ["ready", "Ready"], ["completed", "Completed"]].map(([key, label]) => (
+          <button key={key} onClick={() => setFilter(key)} style={{
+            padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer",
+            background: filter === key ? T.pinkDim : "transparent",
+            color: filter === key ? T.pink : T.textMuted,
+            fontSize: 12, fontWeight: filter === key ? 600 : 400,
+            fontFamily: "'Outfit', sans-serif",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}`, background: T.surfaceHover }}>
+              {["Order #", "Customer", "Items", "Date", !isFront && "Assigned", "Status", "Total", ""].filter(Boolean).map(h => (
+                <th key={h} style={{ textAlign: "left", padding: "10px 12px", color: T.textDim, fontWeight: 500, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(order => (
+              <tr key={order.id} style={{ borderBottom: `1px solid ${T.border}`, cursor: "pointer" }}
+                onMouseEnter={e => e.currentTarget.style.background = T.surfaceHover}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <td style={{ padding: "11px 12px", color: T.pink, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>{order.number}</td>
+                <td style={{ padding: "11px 12px", color: T.text, fontWeight: 500 }}>{order.customer}</td>
+                <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: 12, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{order.items}</td>
+                <td style={{ padding: "11px 12px", color: T.textMuted, fontSize: 12 }}>{order.date}</td>
+                {!isFront && <td style={{ padding: "11px 12px", color: T.textMuted }}>{order.rep}</td>}
+                <td style={{ padding: "11px 12px" }}><StatusBadge status={order.status} /></td>
+                <td style={{ padding: "11px 12px", color: T.text, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{fmt(order.total)}</td>
+                <td style={{ padding: "11px 8px" }}>
+                  {order.needsApproval && (role === "owner" || role === "kitchen") && (
+                    <span style={{
+                      background: T.pinkDim, color: T.pink, border: `1px solid ${T.pink}44`,
+                      fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 6,
+                    }}>Needs Approval</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RECIPES PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+
+function RecipesPage({ role }) {
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [batchMultiplier, setBatchMultiplier] = useState(1);
+  const [ingredients, setIngredients] = useState(SOURDOUGH_INGREDIENTS);
+  const [sellPrice, setSellPrice] = useState(7.50);
+  const [laborMinutes, setLaborMinutes] = useState(45);
+  const [laborRate, setLaborRate] = useState(22);
+  const [overheadPct, setOverheadPct] = useState(15);
+
+  const calcs = useMemo(() => {
+    const ingredientCostBase = ingredients.reduce((a, ing) => a + (ing.amount * ing.unitCost), 0);
+    const ingredientCost = ingredientCostBase * batchMultiplier;
+    const batchYield = 12 * batchMultiplier;
+    const laborCost = (laborMinutes / 60) * laborRate * batchMultiplier;
+    const subtotalCost = ingredientCost + laborCost;
+    const overhead = subtotalCost * (overheadPct / 100);
+    const totalCost = subtotalCost + overhead;
+    const costPerUnit = batchYield > 0 ? totalCost / batchYield : 0;
+    const revenuePerBatch = sellPrice * batchYield;
+    const profitPerBatch = revenuePerBatch - totalCost;
+    const profitPerUnit = sellPrice - costPerUnit;
+    const profitPct = sellPrice > 0 ? (profitPerUnit / sellPrice) * 100 : 0;
+    const foodCostPct = sellPrice > 0 ? (costPerUnit / sellPrice) * 100 : 0;
+    return { ingredientCost, laborCost, overhead, totalCost, batchYield, costPerUnit, revenuePerBatch, profitPerBatch, profitPerUnit, profitPct, foodCostPct };
+  }, [ingredients, batchMultiplier, sellPrice, laborMinutes, laborRate, overheadPct]);
+
+  const updateIngredient = (idx, field, value) => {
+    setIngredients(prev => prev.map((ing, i) =>
+      i === idx ? { ...ing, [field]: field === "name" || field === "unit" ? value : Math.max(0, Number(value) || 0) } : ing
+    ));
+  };
+
+  const inputStyle = {
+    background: T.bg, border: `1px solid ${T.borderLight}`, borderRadius: 8,
+    padding: "7px 10px", color: T.text, fontSize: 13,
+    fontFamily: "'Outfit', sans-serif", outline: "none", width: "100%",
+  };
+  const numInput = { ...inputStyle, width: 72, textAlign: "right", fontVariantNumeric: "tabular-nums" };
+
+  const profitColor = calcs.profitPct >= 60 ? T.green : calcs.profitPct >= 40 ? T.cyan : T.red;
+
+  return (
+    <div style={{ padding: "28px 36px", maxWidth: 1180 }}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0 }}>Recipes</h1>
+        <p style={{ fontSize: 13, color: T.textMuted, margin: "4px 0 0" }}>Recipe library and interactive cost calculator</p>
+      </div>
+
+      {/* Recipe Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 22 }}>
+        {RECIPES.map(r => (
+          <div key={r.id} onClick={() => { setSelectedRecipe(r); setBatchMultiplier(1); }}
+            style={{
+              background: selectedRecipe?.id === r.id ? T.pinkBg : T.surface,
+              border: selectedRecipe?.id === r.id ? `2px solid ${T.pink}` : `1px solid ${T.border}`,
+              borderRadius: 12, padding: "14px 16px", cursor: "pointer",
+              transition: "all 0.15s ease",
+              boxShadow: selectedRecipe?.id === r.id ? `0 0 16px ${T.pinkGlow}` : "none",
+            }}>
+            <div style={{ fontSize: 9, color: T.pink, textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>{r.category}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: "4px 0 6px" }}>{r.name}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: T.textMuted }}>
+              <span>Cost: {fmt(r.unitCost)}</span>
+              <span>Sell: {fmt(r.sellPrice)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Calculator */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Financial bar */}
+          <div style={{
+            background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "16px 22px",
+            display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
+          }}>
+            {[
+              ["Batch Cost", fmt(calcs.totalCost), T.text],
+              ["Cost / Unit", fmt(calcs.costPerUnit), T.textMuted],
+              ["Profit / Unit", fmt(calcs.profitPerUnit), T.green],
+              ["Food Cost %", pct(calcs.foodCostPct), calcs.foodCostPct <= 30 ? T.green : T.red],
+            ].map(([label, val, color]) => (
+              <div key={label}>
+                <div style={{ fontSize: 9, color: T.textDim, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color, fontVariantNumeric: "tabular-nums" }}>{val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Ingredients */}
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 22px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1 }}>Ingredients (Sourdough Loaf)</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 11, color: T.textMuted }}>Batch ×</span>
+                <input type="number" value={batchMultiplier} onChange={e => setBatchMultiplier(Math.max(1, Number(e.target.value) || 1))}
+                  style={{ ...numInput, width: 52 }} min={1} max={20} />
+                <span style={{ fontSize: 11, color: T.textDim }}>= {12 * batchMultiplier} units</span>
+              </div>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr>
+                  {["Ingredient", "Amount", "Unit", "$/Unit", "Ext. Cost", ""].map(h => (
+                    <th key={h} style={{ textAlign: h === "Ingredient" ? "left" : "right", padding: "6px 8px", fontSize: 10, color: T.textDim, textTransform: "uppercase", letterSpacing: 0.5, fontWeight: 500 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {ingredients.map((ing, idx) => {
+                  const scaled = ing.amount * batchMultiplier;
+                  const ext = scaled * ing.unitCost;
+                  return (
+                    <tr key={idx} style={{ borderTop: `1px solid ${T.border}` }}>
+                      <td style={{ padding: "6px 8px" }}><input value={ing.name} onChange={e => updateIngredient(idx, "name", e.target.value)} style={inputStyle} /></td>
+                      <td style={{ padding: "6px 8px" }}><input type="number" value={ing.amount} onChange={e => updateIngredient(idx, "amount", e.target.value)} style={numInput} min={0} step={0.1} /></td>
+                      <td style={{ padding: "6px 8px" }}><input value={ing.unit} onChange={e => updateIngredient(idx, "unit", e.target.value)} style={{ ...numInput, width: 44 }} /></td>
+                      <td style={{ padding: "6px 8px" }}><input type="number" value={ing.unitCost} onChange={e => updateIngredient(idx, "unitCost", e.target.value)} style={numInput} min={0} step={0.01} /></td>
+                      <td style={{ padding: "6px 8px", textAlign: "right", color: T.text, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt(ext)}</td>
+                      <td style={{ padding: "6px 4px" }}>
+                        <button onClick={() => setIngredients(prev => prev.filter((_, i) => i !== idx))}
+                          style={{ background: "none", border: "none", color: T.textDim, cursor: "pointer", fontSize: 14, padding: "2px 4px" }}>×</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: `1px solid ${T.borderLight}` }}>
+                  <td colSpan={4} style={{ padding: "8px", fontSize: 12, fontWeight: 600, color: T.textMuted, textAlign: "right" }}>Ingredient Total</td>
+                  <td style={{ padding: "8px", textAlign: "right", fontSize: 13, fontWeight: 700, color: T.text, fontVariantNumeric: "tabular-nums" }}>{fmt(calcs.ingredientCost)}</td>
+                  <td />
+                </tr>
+              </tfoot>
+            </table>
+            <button onClick={() => setIngredients(prev => [...prev, { name: "", amount: 0, unit: "lb", unitCost: 0 }])}
+              style={{
+                marginTop: 8, background: T.pinkBg, color: T.pink, border: `1px solid ${T.pink}33`,
+                borderRadius: 8, padding: "6px 14px", fontSize: 11, fontWeight: 600,
+                cursor: "pointer", fontFamily: "'Outfit', sans-serif",
+              }}>+ Add Ingredient</button>
+          </div>
+
+          {/* Labor & Overhead */}
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "18px 22px" }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Labor & Overhead</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
+              {[
+                ["Prep Time (min)", laborMinutes, setLaborMinutes],
+                ["Labor Rate ($/hr)", laborRate, setLaborRate],
+                ["Overhead (%)", overheadPct, setOverheadPct],
+                ["Sell Price ($/unit)", sellPrice, setSellPrice],
+              ].map(([label, val, setter]) => (
+                <div key={label}>
+                  <label style={{ fontSize: 11, color: T.textMuted, display: "block", marginBottom: 4 }}>{label}</label>
+                  <input type="number" value={val} onChange={e => setter(Math.max(0, Number(e.target.value) || 0))} style={inputStyle} min={0} step={label.includes("Sell") ? 0.25 : 1} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Summary Panel */}
+        <div style={{ position: "sticky", top: 28, alignSelf: "start" }}>
+          <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "20px 22px" }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Profitability</div>
+
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 42, fontWeight: 900, color: profitColor, fontVariantNumeric: "tabular-nums", lineHeight: 1, textShadow: `0 0 24px ${profitColor}44` }}>
+                {pct(calcs.profitPct)}
+              </div>
+              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>Profit per Unit</div>
+              <div style={{ marginTop: 8, height: 5, borderRadius: 3, background: T.border, overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: 3,
+                  width: `${Math.min(100, calcs.profitPct)}%`,
+                  background: `linear-gradient(90deg, ${T.pink}, ${profitColor})`,
+                  boxShadow: `0 0 8px ${profitColor}44`,
+                  transition: "width 0.4s ease",
+                }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: T.textDim, marginTop: 3 }}>
+                <span>0%</span><span>50%</span><span>100%</span>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {[["Ingredients", calcs.ingredientCost], ["Labor", calcs.laborCost], ["Overhead", calcs.overhead]].map(([label, val]) => (
+                <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "5px 0", borderBottom: `1px solid ${T.border}` }}>
+                  <span style={{ color: T.textMuted }}>{label}</span>
+                  <span style={{ color: T.text, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{fmt(val)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ borderTop: `2px solid ${T.pink}`, marginTop: 10, paddingTop: 10, boxShadow: `0 -2px 8px ${T.pinkGlow}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: T.textMuted }}>Total Cost</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.text, fontVariantNumeric: "tabular-nums" }}>{fmt(calcs.totalCost)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: T.textMuted }}>Revenue</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.green, fontVariantNumeric: "tabular-nums" }}>{fmt(calcs.revenuePerBatch)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0 0", borderTop: `1px solid ${T.border}` }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: T.text }}>Batch Profit</span>
+                <span style={{ fontSize: 18, fontWeight: 900, color: T.pink, fontVariantNumeric: "tabular-nums", textShadow: `0 0 16px ${T.pinkGlow}` }}>{fmt(calcs.profitPerBatch)}</span>
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: 14, padding: "10px 14px", borderRadius: 10,
+              background: T.pinkBg, border: `1px solid ${T.pink}33`,
+              fontSize: 12, color: T.pink, textAlign: "center", fontWeight: 500,
+            }}>
+              {calcs.batchYield} units @ {fmt(calcs.costPerUnit)} cost / {fmt(sellPrice)} sell
+            </div>
+          </div>
+
+          <div style={{
+            marginTop: 10, padding: "8px 14px", borderRadius: 10,
+            background: `${T.green}12`, border: `1px solid ${T.green}33`,
+            display: "flex", alignItems: "center", gap: 8,
+            fontSize: 11, color: T.green,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, boxShadow: `0 0 6px ${T.green}66` }} />
+            Calculations update in real time
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INVENTORY PAGE
+// ═══════════════════════════════════════════════════════════════════════════
+
+function InventoryPage({ role }) {
+  const isOwner = role === "owner";
+  return (
+    <div style={{ padding: "28px 36px", maxWidth: 1180 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0 }}>Inventory</h1>
+          <p style={{ fontSize: 13, color: T.textMuted, margin: "4px 0 0" }}>Stock levels and reorder tracking</p>
+        </div>
+        {(isOwner || role === "kitchen") && (
+          <button style={{
+            background: `linear-gradient(135deg, ${T.pink}, #db2777)`,
+            color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px",
+            fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif",
+            boxShadow: `0 4px 16px ${T.pinkGlow}`,
+          }}>+ Add Item</button>
+        )}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+        <Metric label="Total Items" value={INGREDIENTS.length} accent={T.text} icon="▦" />
+        <Metric label="Low Stock" value={INGREDIENTS.filter(i => i.stock <= i.reorder).length} sub="Below reorder point" accent={T.red} icon="↓" />
+        <Metric label="Inventory Value" value={fmtShort(INGREDIENTS.reduce((a, i) => a + i.stock * i.cost, 0))} accent={T.green} icon="$" />
+      </div>
+
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${T.border}`, background: T.surfaceHover }}>
+              {["Ingredient", "Unit", "Unit Cost", "In Stock", "Reorder At", "Value", "Status"].map(h => (
+                <th key={h} style={{ textAlign: "left", padding: "10px 14px", color: T.textDim, fontWeight: 500, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {INGREDIENTS.map((item, i) => {
+              const isLow = item.stock <= item.reorder;
+              return (
+                <tr key={i} style={{ borderBottom: `1px solid ${T.border}` }}>
+                  <td style={{ padding: "12px 14px", color: T.text, fontWeight: 500 }}>{item.name}</td>
+                  <td style={{ padding: "12px 14px", color: T.textMuted }}>{item.unit}</td>
+                  <td style={{ padding: "12px 14px", color: T.textMuted, fontVariantNumeric: "tabular-nums" }}>{fmt(item.cost)}</td>
+                  <td style={{ padding: "12px 14px", color: isLow ? T.red : T.text, fontWeight: isLow ? 700 : 400, fontVariantNumeric: "tabular-nums" }}>{item.stock}</td>
+                  <td style={{ padding: "12px 14px", color: T.textDim, fontVariantNumeric: "tabular-nums" }}>{item.reorder}</td>
+                  <td style={{ padding: "12px 14px", color: T.text, fontVariantNumeric: "tabular-nums" }}>{fmt(item.stock * item.cost)}</td>
+                  <td style={{ padding: "12px 14px" }}>
+                    {isLow ? (
+                      <span style={{ background: `${T.red}18`, color: T.red, border: `1px solid ${T.red}33`, fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 6 }}>Low Stock</span>
+                    ) : (
+                      <span style={{ background: `${T.green}18`, color: T.green, border: `1px solid ${T.green}33`, fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 6 }}>OK</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function SettingsPage() {
+  return (
+    <div style={{ padding: "28px 36px", maxWidth: 800 }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: T.text, margin: 0 }}>Settings</h1>
+        <p style={{ fontSize: 13, color: T.textMuted, margin: "4px 0 0" }}>Profile and application details</p>
+      </div>
+
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "22px", marginBottom: 14 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>About This Demo</div>
+        <p style={{ fontSize: 13, color: T.textMuted, lineHeight: 1.7, margin: 0 }}>
+          This is a live demo of an enterprise management application built by Sequential Analytics.
+          Every element is functional: the recipe calculator runs real cost equations,
+          the dashboard reflects sample data, and the role switcher changes what each user type can access.
+          No backend, no database, no stored data. Just the frontend patterns and
+          calculation engines that power production applications.
+        </p>
+      </div>
+
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "22px", marginBottom: 14 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>What This Showcases</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {[
+            ["Live Calculations", "Recipe costs, unit pricing, and profitability update with every keystroke."],
+            ["Role-Based Access", "Three distinct views: Owner sees everything, Kitchen sees production, Front sees their orders."],
+            ["Approval Workflows", "High-value or custom orders require manager sign-off before production."],
+            ["Data Architecture", "Relational data model: recipes, ingredients, orders, inventory, users, all connected."],
+            ["Responsive Design", "Production-grade UI built for desktop and mobile use."],
+            ["Security Patterns", "Row-Level Security, invite-only auth, session management, audit logging."],
+          ].map(([title, desc]) => (
+            <div key={title} style={{ padding: "12px 14px", background: T.surfaceHover, borderRadius: 10, border: `1px solid ${T.border}` }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.pink, marginBottom: 3 }}>{title}</div>
+              <div style={{ fontSize: 11, color: T.textMuted, lineHeight: 1.5 }}>{desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: "22px" }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: T.textDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Technical Stack</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {["Next.js", "React", "TypeScript", "PostgreSQL", "Supabase", "Row-Level Security", "Tailwind CSS", "Vercel", "PWA"].map(tech => (
+            <span key={tech} style={{
+              background: T.pinkBg, color: T.pink, border: `1px solid ${T.pink}33`,
+              fontSize: 11, fontWeight: 500, padding: "4px 10px", borderRadius: 6,
+            }}>{tech}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════════════════════════════
+
+export default function BakeryDemo() {
+  const [page, setPage] = useState("dashboard");
+  const [role, setRole] = useState("owner");
+
+  const renderPage = () => {
+    switch (page) {
+      case "dashboard": return <DashboardPage role={role} />;
+      case "orders": return <OrdersPage role={role} />;
+      case "recipes": return <RecipesPage role={role} />;
+      case "inventory": return <InventoryPage role={role} />;
+      case "settings": return <SettingsPage />;
+      default: return <DashboardPage role={role} />;
+    }
+  };
+
+  return (
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+      <style>{`
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${T.borderLight}; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: ${T.pink}44; }
+        input:focus, select:focus, textarea:focus { border-color: ${T.pink} !important; box-shadow: 0 0 0 2px ${T.pinkGlow}; }
+        input[type=number]::-webkit-inner-spin-button { opacity: 0.3; }
+        ::selection { background: ${T.pink}44; color: #fff; }
+      `}</style>
+      <div style={{
+        display: "flex", height: "100vh", width: "100%",
+        background: T.bg,
+        fontFamily: "'Outfit', sans-serif",
+        overflow: "hidden",
+        color: T.text,
+      }}>
+        <Sidebar active={page} onNav={setPage} role={role} onRoleChange={setRole} />
+        <div style={{ flex: 1, overflow: "auto" }}>
+          {/* Top bar */}
+          <div style={{
+            height: 46, borderBottom: `1px solid ${T.border}`, background: T.surface,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "0 36px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 11, color: T.textDim }}>Viewing as:</span>
+              <span style={{
+                fontSize: 11, fontWeight: 600, color: ROLES[role]?.color,
+                background: `${ROLES[role]?.color}15`,
+                padding: "3px 10px", borderRadius: 6,
+                border: `1px solid ${ROLES[role]?.color}33`,
+                boxShadow: `0 0 8px ${ROLES[role]?.color}22`,
+              }}>
+                {ROLES[role]?.icon} {ROLES[role]?.label}
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 11, color: T.textDim }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.green, boxShadow: `0 0 6px ${T.green}66` }} />
+                Interactive Demo
+              </span>
+              <span style={{ color: T.borderLight }}>|</span>
+              <span style={{ color: T.pink, fontWeight: 600 }}>Built by Sequential Analytics</span>
+            </div>
+          </div>
+          {renderPage()}
+        </div>
+      </div>
+    </>
+  );
+}

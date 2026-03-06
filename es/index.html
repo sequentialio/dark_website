@@ -88,8 +88,38 @@
   </nav>
 
 
+  <!-- ═══ INTERACTIVE DEMO ═══ -->
+  <section class="pt-16" style="background: #0A0A0A;">
+    <div class="container" style="padding-top: 80px; padding-bottom: 48px; text-align: center;">
+      <h2 class="demo-fade font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-sa-text" style="line-height: 1.1; animation-delay: 0.15s;">
+        Tu negocio funciona con procesos.<br>
+        <span class="text-sa-accent">Nosotros los convertimos en software.</span>
+      </h2>
+      <p class="demo-fade text-sa-muted text-base md:text-lg" style="margin-top: 16px; max-width: 540px; margin-left: auto; margin-right: auto; animation-delay: 0.35s;">
+        Demo interactivo — explora una aplicación real que construimos para las operaciones de una panadería.
+      </p>
+    </div>
+    <iframe
+      id="demo-iframe"
+      class="demo-slide"
+      src="/demo/"
+      title="Demo Interactivo – Panel de Operaciones de Panadería"
+      style="width: 100%; height: 900px; border: none; display: block; animation-delay: 0.6s;"
+      loading="eager"
+    ></iframe>
+  </section>
+
+  <script>
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'demo-resize') {
+        document.getElementById('demo-iframe').style.height = e.data.height + 'px';
+      }
+    });
+  </script>
+
+
   <!-- ═══ HERO ═══ -->
-  <section class="grid-bg min-h-screen flex items-center pt-16 relative">
+  <section class="grid-bg flex items-center pt-16 relative">
 
     <div class="container w-full py-24 md:py-32 relative z-10">
       <div class="max-w-3xl">
@@ -212,6 +242,50 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </span>
         </a>
+
+        <!-- Bakery Operations Demo Card (Full width) -->
+        <a href="/es/proyectos/#bakery" class="card lg:col-span-5 p-8 md:p-10 block no-underline reveal" style="transition-delay: 0.2s;">
+          <span class="badge badge-demo">Demo Interactivo</span>
+          <h3 class="font-display text-2xl md:text-3xl font-bold tracking-tight mt-5 mb-2 text-sa-text">
+            Dashboard de Operaciones de Panadería
+          </h3>
+          <p class="text-sa-muted text-sm mb-1">Rise &amp; Proof &mdash; Cliente de Muestra</p>
+          <p class="text-sa-muted text-sm leading-relaxed mt-4 mb-8 max-w-lg">
+            Demo interactivo de una app de operaciones empresariales para una panadería. Dashboards por rol, calculadora de costos en vivo, gestión de pedidos y control de inventario &mdash; todo corriendo en el navegador.
+          </p>
+
+          <!-- Stats -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
+            <div>
+              <div class="stat-value">5</div>
+              <div class="stat-label">Módulos</div>
+            </div>
+            <div>
+              <div class="stat-value">3</div>
+              <div class="stat-label">Roles de Usuario</div>
+            </div>
+            <div>
+              <div class="stat-value">En Vivo</div>
+              <div class="stat-label">Calculadora de Costos</div>
+            </div>
+            <div>
+              <div class="stat-value">Móvil</div>
+              <div class="stat-label">Diseño Responsivo</div>
+            </div>
+          </div>
+
+          <!-- Tech -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            <span class="tech-badge">React</span>
+            <span class="tech-badge">JavaScript</span>
+            <span class="tech-badge">Diseño Responsivo</span>
+          </div>
+
+          <span class="link-accent">
+            Ver proyecto completo
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </a>
       </div>
     </div>
   </section>
@@ -221,7 +295,7 @@
 
 
   <!-- ═══ TECH STRIP ═══ -->
-  <section class="py-10 overflow-hidden">
+  <section class="py-10 overflow-hidden reveal">
     <p class="text-center text-sa-muted text-[11px] tracking-[0.18em] uppercase mb-6">Construido con</p>
     <div class="marquee-container">
       <div class="marquee-track">
@@ -320,7 +394,7 @@
 
 
   <!-- ═══ FOOTER ═══ -->
-  <footer class="site-footer">
+  <footer class="site-footer reveal">
     <div class="footer-inner">
       <div class="flex flex-col md:flex-row justify-between gap-10">
         <div>
