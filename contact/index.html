@@ -110,7 +110,7 @@
         <!-- Form -->
         <div class="lg:col-span-3 hero-fade" style="animation-delay: 0.35s;">
           <div class="form-container" id="form-container">
-            <form action="https://formspree.io/f/xaqdzylv" method="POST" id="contact-form">
+            <form action="/api/contact" method="POST" id="contact-form">
 
               <div class="grid sm:grid-cols-2 gap-5 mb-5">
                 <div>
@@ -259,10 +259,11 @@
       submitBtn.disabled = true;
 
       try {
+        const payload = Object.fromEntries(new FormData(form).entries());
         const response = await fetch(form.action, {
           method: 'POST',
-          body: new FormData(form),
-          headers: { 'Accept': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
 
         if (response.ok) {
