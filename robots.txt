@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://sequentialanalytics.io/sitemap.xml
+Sitemap: https://sequentialworks.com/sitemap.xml

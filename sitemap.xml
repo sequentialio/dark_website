@@ -2,59 +2,59 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sequentialanalytics.io/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sequentialanalytics.io/es/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/es/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sequentialanalytics.io/company/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/company/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/nosotros/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/company/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/company/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/nosotros/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sequentialanalytics.io/es/nosotros/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/company/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/nosotros/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/es/nosotros/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/company/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/nosotros/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sequentialanalytics.io/case-studies/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/case-studies/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/proyectos/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/case-studies/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/case-studies/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/proyectos/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sequentialanalytics.io/es/proyectos/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/case-studies/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/proyectos/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/es/proyectos/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/case-studies/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/proyectos/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sequentialanalytics.io/contact/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/contact/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/contacto/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/contacto/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sequentialanalytics.io/es/contacto/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialanalytics.io/contact/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialanalytics.io/es/contacto/"/>
-    <lastmod>2026-02-28</lastmod>
+    <loc>https://sequentialworks.com/es/contacto/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://sequentialworks.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://sequentialworks.com/es/contacto/"/>
+    <lastmod>2026-08-07</lastmod>
     <priority>0.7</priority>
   </url>
 </urlset>
