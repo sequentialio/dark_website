@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Sequential Analytics Contact Form <onboarding@resend.dev>',
+        from: 'Sequential Analytics <alan@sequentialworks.com>',
         to: 'alan@sequentialworks.com',
         reply_to: email,
         subject: `New contact form message from ${name}`,
